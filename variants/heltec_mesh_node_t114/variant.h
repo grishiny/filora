@@ -18,131 +18,214 @@
 
 #ifndef _VARIANT_HELTEC_NRF_
 #define _VARIANT_HELTEC_NRF_
-
 /** Master clock frequency */
 #define VARIANT_MCK (64000000ul)
 
-#define USE_LFXO // Board uses 32 kHz crystal for LF clock
+#define USE_LFXO // Board uses 32khz crystal for LF
+
+/*----------------------------------------------------------------------------
+ *        Headers
+ *----------------------------------------------------------------------------*/
 
 #include "WVariant.h"
 
 #ifdef __cplusplus
 extern "C" {
-#endif
+#endif // __cplusplus
 
 #define HELTEC_MESH_NODE_T114
 
-/* -----------------------------------------------------------------------
- * Pin count
- * --------------------------------------------------------------------- */
-#define PINS_COUNT        (48)
-#define NUM_DIGITAL_PINS  (48)
-#define NUM_ANALOG_INPUTS  (1)
+#define USE_ST7789
+#define HAS_SPI_TFT 1
+#define ST7789_NSS 11
+#define ST7789_RS 12  // DC
+#define ST7789_SDA 41 // MOSI
+#define ST7789_SCK 40
+#define ST7789_RESET 2
+#define ST7789_MISO -1
+#define ST7789_BUSY -1
+#define VTFT_CTRL 3
+#define VTFT_LEDA 15
+// #define ST7789_BL (32+6)
+#define TFT_BACKLIGHT_ON LOW
+#define ST7789_SPI_HOST SPI1_HOST
+// #define TFT_BL (32+6)
+#define SPI_FREQUENCY 40000000
+#define SPI_READ_FREQUENCY 16000000
+#define TFT_HEIGHT 135
+#define TFT_WIDTH 240
+#define TFT_OFFSET_X 0
+#define TFT_OFFSET_Y 0
+
+// #define TFT_OFFSET_ROTATION 0
+// #define SCREEN_ROTATE
+// #define SCREEN_TRANSITION_FRAMERATE 5
+
+// Number of pins defined in PinDescription array
+#define PINS_COUNT (48)
+#define NUM_DIGITAL_PINS (48)
+#define NUM_ANALOG_INPUTS (1)
 #define NUM_ANALOG_OUTPUTS (0)
 
-/* -----------------------------------------------------------------------
- * LEDs  (active-low)
- * P1.03 = green LED
- * --------------------------------------------------------------------- */
-#define PIN_LED1      (32 + 3)
-#define LED_BLUE      PIN_LED1   // alias expected by some BSP code
-#define LED_GREEN     PIN_LED1
-#define LED_STATE_ON  0          // LOW = lit
+// LEDs
+#define PIN_LED1 (32 + 3) // green (confirmed on 1.0 board)
+#define LED_BLUE PIN_LED1 // fake for bluefruit library
+#define LED_GREEN PIN_LED1
+#define LED_STATE_ON 0 // State when LED is lit
 
-/* -----------------------------------------------------------------------
- * NeoPixels
- * P0.14 — 2× WS2812B RGB LEDs
- * --------------------------------------------------------------------- */
-#define HAS_NEOPIXEL
-#define NEOPIXEL_COUNT 2
-#define NEOPIXEL_DATA  14
-#define NEOPIXEL_TYPE  (NEO_GRB + NEO_KHZ800)
+#define HAS_NEOPIXEL                         // Enable the use of neopixels
+#define NEOPIXEL_COUNT 2                     // How many neopixels are connected
+#define NEOPIXEL_DATA 14                     // gpio pin used to send data to the neopixels
+#define NEOPIXEL_TYPE (NEO_GRB + NEO_KHZ800) // type of neopixels in use
 
-/* -----------------------------------------------------------------------
- * Button
- * P1.10
- * --------------------------------------------------------------------- */
+/*
+ * Buttons
+ */
 #define PIN_BUTTON1 (32 + 10)
+// #define PIN_BUTTON2 (0 + 18)      // 0.18 is labeled on the board as RESET but we configure it in the bootloader as a regular
+// GPIO
 
-/* -----------------------------------------------------------------------
- * I²C
- * Bus 0: P0.26 SDA / P0.27 SCL  — RTC footprint (unpopulated on V1)
- * Bus 1: P0.16 SDA / P0.13 SCL  — header pins, general use
- * --------------------------------------------------------------------- */
+/*
+No longer populated on PCB
+*/
+#define PIN_SERIAL2_RX (0 + 9)
+#define PIN_SERIAL2_TX (0 + 10)
+//  #define PIN_SERIAL2_EN (0 + 17)
+
+/*
+ * I2C
+ */
+
 #define WIRE_INTERFACES_COUNT 2
 
-#define PIN_WIRE_SDA  (0 + 26)
-#define PIN_WIRE_SCL  (0 + 27)
+// I2C bus 0
+// Routed to footprint for PCF8563TS RTC
+// Not populated on T114 V1, maybe in future?
+#define PIN_WIRE_SDA (0 + 26) // P0.26
+#define PIN_WIRE_SCL (0 + 27) // P0.27
 
-#define PIN_WIRE1_SDA (0 + 16)
-#define PIN_WIRE1_SCL (0 + 13)
+// I2C bus 1
+// Available on header pins, for general use
+#define PIN_WIRE1_SDA (0 + 16) // P0.16
+#define PIN_WIRE1_SCL (0 + 13) // P0.13
 
-/* -----------------------------------------------------------------------
- * QSPI Flash  —  MX25R1635F (2 MB)
- * --------------------------------------------------------------------- */
-#define PIN_QSPI_SCK  (32 + 14)
-#define PIN_QSPI_CS   (32 + 15)
-#define PIN_QSPI_IO0  (32 + 12)   // MOSI / DI
-#define PIN_QSPI_IO1  (32 + 13)   // MISO / DO
-#define PIN_QSPI_IO2  (0  +  7)   // WP   (unused in 2-bit mode)
-#define PIN_QSPI_IO3  (0  +  5)   // HOLD (unused in 2-bit mode)
+// QSPI Pins
+#define PIN_QSPI_SCK (32 + 14)
+#define PIN_QSPI_CS (32 + 15)
+#define PIN_QSPI_IO0 (32 + 12) // MOSI if using two bit interface
+#define PIN_QSPI_IO1 (32 + 13) // MISO if using two bit interface
+#define PIN_QSPI_IO2 (0 + 7)   // WP if using two bit interface (i.e. not used)
+#define PIN_QSPI_IO3 (0 + 5)   // HOLD if using two bit interface (i.e. not used)
 
+// On-board QSPI Flash
 #define EXTERNAL_FLASH_DEVICES MX25R1635F
 #define EXTERNAL_FLASH_USE_QSPI
 
-/* -----------------------------------------------------------------------
- * LoRa radio — SX1262  (SPI0)
- * CS   P0.24
- * DIO1 P0.20
- * BUSY P0.17
- * RST  P0.25
- * DIO2 used internally as RF switch (do not drive from CPU)
- * DIO3 drives the TCXO at 1.8 V
- * --------------------------------------------------------------------- */
+/*
+ * Lora radio
+ */
+
 #define USE_SX1262
-#define SX126X_CS            (0 + 24)
-#define LORA_CS              (0 + 24)
-#define SX126X_DIO1          (0 + 20)
-#define SX126X_BUSY          (0 + 17)
-#define SX126X_RESET         (0 + 25)
+// #define USE_SX1268
+#define SX126X_CS (0 + 24) // FIXME - we really should define LORA_CS instead
+#define LORA_CS (0 + 24)
+#define SX126X_DIO1 (0 + 20)
+// Note DIO2 is attached internally to the module to an analog switch for TX/RX switching
+// #define SX1262_DIO3 (0 + 21)
+// This is used as an *output* from the sx1262 and connected internally to power the tcxo, do not drive from the
+//    main
+// CPU?
+#define SX126X_BUSY (0 + 17)
+#define SX126X_RESET (0 + 25)
+// Not really an E22 but TTGO seems to be trying to clone that
 #define SX126X_DIO2_AS_RF_SWITCH
 #define SX126X_DIO3_TCXO_VOLTAGE 1.8
 
-/* -----------------------------------------------------------------------
- * Serial1 — required by the BSP's Uart.cpp regardless of whether it is used.
- * These are the physical UART pins on the board; leave unconnected if unused.
- * P1.07 = TX (toward board), P1.05 = RX (toward board)
- * --------------------------------------------------------------------- */
-#define PIN_SERIAL1_RX (32 + 7)
-#define PIN_SERIAL1_TX (32 + 5)
+#define PIN_SPI1_MISO                                                                                                            \
+    ST7789_MISO // FIXME not really needed, but for now the SPI code requires something to be defined, pick an used GPIO
+#define PIN_SPI1_MOSI ST7789_SDA
+#define PIN_SPI1_SCK ST7789_SCK
 
-/* -----------------------------------------------------------------------
- * SPI0 — LoRa
- * MISO P0.23 / MOSI P0.22 / SCK P0.19
- * --------------------------------------------------------------------- */
-#define SPI_INTERFACES_COUNT 1
+/*
+ * Bluetooth
+ */
+
+// The bluetooth transmit power on the nRF52840 is adjustable from -20dB to +8dB in steps of 4dB
+// so NRF52_BLE_TX_POWER can be set to -20, -16, -12, -8, -4, 0 (default), 4, and 8.
+// #define NRF52_BLE_TX_POWER 8
+
+/*
+ * GPS pins
+ */
+
+#define GPS_L76K
+
+// #define PIN_GPS_RESET (32 + 6) // An output to reset L76K GPS. As per datasheet, low for > 100ms will reset the L76K
+#define GPS_RESET_MODE LOW
+// #define PIN_GPS_EN (21)
+#define VEXT_ENABLE (0 + 21)
+#define PERIPHERAL_WARMUP_MS 1000 // Make sure I2C QuickLink has stable power before continuing
+#define VEXT_ON_VALUE HIGH
+// #define GPS_EN_ACTIVE HIGH
+#define PIN_GPS_STANDBY (32 + 2) // An output to wake GPS, low means allow sleep, high means force wake
+#define PIN_GPS_PPS (32 + 4)
+// Seems to be missing on this new board
+// #define PIN_GPS_PPS (32 + 4)  // Pulse per second input from the GPS
+#define GPS_TX_PIN (32 + 7) // This is for bits going TOWARDS the GPS
+#define GPS_RX_PIN (32 + 5) // This is for bits going TOWARDS the CPU
+
+#define GPS_THREAD_INTERVAL 50
+
+#define PIN_SERIAL1_RX GPS_RX_PIN
+#define PIN_SERIAL1_TX GPS_TX_PIN
+
+/*
+ * SPI Interfaces
+ */
+#define SPI_INTERFACES_COUNT 2
+
+// For LORA, spi 0
 #define PIN_SPI_MISO (0 + 23)
 #define PIN_SPI_MOSI (0 + 22)
-#define PIN_SPI_SCK  (0 + 19)
+#define PIN_SPI_SCK (0 + 19)
 
-/* -----------------------------------------------------------------------
- * Battery ADC
- * P0.04 = AIN2 via resistor divider (100k / 390k → ×4.916)
- * ADC_CTRL (P0.06) must be driven HIGH to enable the divider.
- * --------------------------------------------------------------------- */
-#define ADC_CTRL              6
-#define ADC_CTRL_ENABLED      HIGH
-#define BATTERY_PIN           4
-#define ADC_RESOLUTION        14
+// To debug via the segger JLINK console rather than the CDC-ACM serial device
+// #define USE_SEGGER
+
+// Battery
+// The battery sense is hooked to pin A0 (4)
+// it is defined in the anlaolgue pin section of this file
+// and has 12 bit resolution
+
+#define ADC_CTRL 6
+#define ADC_CTRL_ENABLED HIGH
+#define BATTERY_PIN 4
+#define ADC_RESOLUTION 14
+
 #define BATTERY_SENSE_RESOLUTION_BITS 12
-#define BATTERY_SENSE_RESOLUTION      4096.0
-#undef  AREF_VOLTAGE
-#define AREF_VOLTAGE          3.0
-#define VBAT_AR_INTERNAL      AR_INTERNAL_3_0
-#define ADC_MULTIPLIER        (4.916F)
+#define BATTERY_SENSE_RESOLUTION 4096.0
+#undef AREF_VOLTAGE
+#define AREF_VOLTAGE 3.0
+#define VBAT_AR_INTERNAL AR_INTERNAL_3_0
+#define ADC_MULTIPLIER (4.916F)
+
+// rf52840 AIN2 = Pin 4
+// commented out due to power leakage of 2.9mA in shutdown state see reported issue #8801
+// #define BATTERY_LPCOMP_INPUT NRF_LPCOMP_INPUT_2 //UNSAFE
+
+// We have AIN2 with a VBAT divider so AIN2 = VBAT * (100/490)
+// We have the device going deep sleep under 3.1V, which is AIN2 = 0.63V
+// So we can wake up when VBAT>=VDD is restored to 3.3V, where AIN2 = 0.67V
+// Ratio 0.67/3.3 = 0.20, so we can pick a bit higher, 2/8 VDD, which means
+// VBAT=4.04V
+#define BATTERY_LPCOMP_THRESHOLD NRF_LPCOMP_REF_SUPPLY_2_8
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* _VARIANT_HELTEC_NRF_ */
+/*----------------------------------------------------------------------------
+ *        Arduino objects - C++ only
+ *----------------------------------------------------------------------------*/
+
+#endif

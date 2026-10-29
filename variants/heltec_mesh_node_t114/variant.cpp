@@ -20,24 +20,27 @@
 
 #include "variant.h"
 #include "Arduino.h"
+#include "nrf.h"
 #include "wiring_constants.h"
 #include "wiring_digital.h"
 
-/*
- * Pin mapping table — maps Arduino logical pin numbers to nRF52840 GPIO numbers.
- * Pins 0 and 1 (P0.00 / P0.01) are reserved for the 32 MHz crystal oscillator.
- */
 const uint32_t g_ADigitalPinMap[] = {
-    // P0.00 – P0.31
-    0xff, 0xff, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
-    16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,
-    // P1.00 – P1.15
-    32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47
-};
+    // P0 - pins 0 and 1 are hardwired for xtal and should never be enabled
+    0xff, 0xff, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,
+
+    // P1
+    32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47};
 
 void initVariant()
 {
-    // Drive LED off at startup (active-low green on P1.03)
+    // LED1
     pinMode(PIN_LED1, OUTPUT);
     ledOff(PIN_LED1);
+}
+
+void variant_shutdown()
+{
+    nrf_gpio_cfg_default(PIN_GPS_PPS);
+    detachInterrupt(PIN_GPS_PPS);
+    detachInterrupt(PIN_BUTTON1);
 }
