@@ -48,7 +48,8 @@ extern "C" {
 #define VTFT_LEDA 15
 // #define ST7789_BL (32+6)
 #define TFT_BACKLIGHT_ON LOW
-#define ST7789_SPI_HOST SPI1_HOST
+// ST7789 uses SPIM1. SPI1_HOST does not exist in this BSP fork;
+// src/main.cpp creates the SPIClass instance bound to NRF_SPIM1.
 // #define TFT_BL (32+6)
 #define SPI_FREQUENCY 40000000
 #define SPI_READ_FREQUENCY 16000000
