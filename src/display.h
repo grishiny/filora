@@ -21,6 +21,15 @@ public:
     // Текст белым по центру на чёрном фоне.
     void showCenteredText(const char *text);
 
+    // --- «Консольный» режим: сообщения выводятся строка за строкой, ---
+    // --- старые строки уходят вверх (скроллинг), как в терминале.       ---
+
+    // Очистить консольный буфер и экран.
+    void consoleClear();
+
+    // Добавить строку в конец консоли и перерисовать экран.
+    void consolePrintln(const String &text);
+
     // Размеры экрана в пикселях.
     static uint16_t width()  { return TFT_WIDTH; }
     static uint16_t height() { return TFT_HEIGHT; }
